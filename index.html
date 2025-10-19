@@ -4,26 +4,125 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AI Compliance Coach</title>
-  <meta name="theme-color" content="#111827" />
-  <!-- IMPORTANT: for GitHub Pages, set the correct path to your manifest -->
+  <meta name="theme-color" content="#0b1220" />
   <link rel="manifest" href="/ai-practice-widget/manifest.webmanifest">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%22.1em%22 font-size=%2280%22>🤖</text></svg>">
+  <style>
+    :root{
+      --bg:#0b1220; --fg:#e5e7eb; --muted:#9aa3b2; --card:#0f172a;
+      --ring:#60a5fa; --border:#1f2937; --shadow:0 24px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--fg); background:radial-gradient(1200px 600px at 10% -10%,#1a2440 0%,transparent 60%),
+                        radial-gradient(1000px 800px at 100% 10%,#1b3a6b 0%,transparent 55%),
+                        var(--bg);
+      display:flex; align-items:center; justify-content:center; padding:18px;
+    }
+    .grid{
+      position:fixed; inset:0; pointer-events:none; opacity:.18; 
+      background-image: linear-gradient(to right, rgba(255,255,255,.08) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .wrap{ width:100%; max-width:880px }
+    header{ text-align:center; margin-bottom:18px }
+    h1{ margin:0 0 6px; font-weight:700; letter-spacing:.2px; font-size: clamp(22px, 4vw, 28px); }
+    .sub{ color:var(--muted); font-size:14px }
+    .card{
+      background:rgba(15,23,42,.72); border:1px solid var(--border);
+      border-radius:20px; box-shadow:var(--shadow);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      padding:18px;
+    }
+    .slot{ margin-top:6px; display:flex; justify-content:center }
+    .note{ color:var(--muted); font-size:12px; text-align:center; margin-top:10px }
+    footer{ text-align:center; margin-top:14px; color:var(--muted); font-size:12px }
+    .row{ display:flex; gap:10px; align-items:center; justify-content:center; margin:10px 0 14px }
+    .btn{
+      appearance:none; border:1px solid var(--border); color:var(--fg);
+      background:linear-gradient(180deg,#17213a,#121a2f);
+      padding:10px 14px; border-radius:12px; font-size:14px; cursor:pointer;
+      transition: transform .06s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .btn:hover{ border-color:#334155; box-shadow:0 6px 24px rgba(96,165,250,.15) }
+    .btn:active{ transform: translateY(1px) }
+    .toast{
+      font-size:12px; border:1px solid var(--border); border-radius:10px;
+      padding:8px 10px; background:rgba(15,23,42,.8);
+    }
+    .ok{ color:#86efac } .warn{ color:#fca5a5 }
+    @media (min-width:720px){ .card{ padding:22px } }
+  </style>
 </head>
-<body style="font-family:sans-serif; background:#0b1220; color:#e5e7eb; text-align:center; padding:20px; min-height:100vh; margin:0;">
-  <h1>AI Compliance Coach</h1>
+<body>
+  <div class="grid"></div>
+  <div class="wrap">
+    <header>
+      <h1>AI Compliance Coach</h1>
+      <div class="sub">Practice the program narrative, KPIs, and board Q&A with your ElevenLabs agent.</div>
+    </header>
 
-  <elevenlabs-convai agent-id="agent_1101k7wte4v7etgvne4zastgwjk9"></elevenlabs-convai>
+    <div class="card">
+      <div class="row">
+        <button id="installBtn" class="btn" style="display:none">➕ Install App</button>
+        <div id="status" class="toast">Loading voice widget…</div>
+      </div>
 
-  <p style="font-size:14px; opacity:0.7;">Tip: install this as an app from your browser menu.</p>
+      <div class="slot">
+        <elevenlabs-convai agent-id="agent_1101k7wte4v7etgvne4zastgwjk9"></elevenlabs-convai>
+      </div>
+
+      <p class="note">Tip: use headphones for echo-free practice. Add to Home Screen for one-tap access.</p>
+    </div>
+
+    <footer>© 2025 • Regulated Environments & Contract Compliance</footer>
+  </div>
 
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
 
-  <!-- Register the service worker for PWA behavior -->
   <script>
+    // Service worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/ai-practice-widget/sw.js').catch(()=>{});
       });
     }
+
+    // Simple widget ready/status handling
+    const statusEl = document.getElementById('status');
+    const widgetCheck = setInterval(() => {
+      const loaded = !!customElements.get?.('elevenlabs-convai');
+      if (loaded) {
+        clearInterval(widgetCheck);
+        statusEl.textContent = 'Ready';
+        statusEl.classList.add('ok');
+      }
+    }, 400);
+    setTimeout(() => {
+      if (!customElements.get?.('elevenlabs-convai')) {
+        statusEl.textContent = 'If it stalls, pull-to-refresh or check connectivity.';
+        statusEl.classList.add('warn');
+      }
+    }, 5000);
+
+    // Show Install button when eligible (Android/Chrome)
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+    });
+    installBtn?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
   </script>
 </body>
 </html>
