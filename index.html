@@ -5,14 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AI Compliance Coach</title>
   <meta name="theme-color" content="#111827" />
+  <!-- IMPORTANT: for GitHub Pages, set the correct path to your manifest -->
+  <link rel="manifest" href="/ai-practice-widget/manifest.webmanifest">
 </head>
-<body style="font-family:sans-serif; background:#0b1220; color:#e5e7eb; text-align:center; padding:20px;">
+<body style="font-family:sans-serif; background:#0b1220; color:#e5e7eb; text-align:center; padding:20px; min-height:100vh; margin:0;">
   <h1>AI Compliance Coach</h1>
 
   <elevenlabs-convai agent-id="agent_1101k7wte4v7etgvne4zastgwjk9"></elevenlabs-convai>
 
-  <p style="font-size:14px; opacity:0.7;">Add this page to your phone’s home screen for one-tap access.</p>
+  <p style="font-size:14px; opacity:0.7;">Tip: install this as an app from your browser menu.</p>
 
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+
+  <!-- Register the service worker for PWA behavior -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/ai-practice-widget/sw.js').catch(()=>{});
+      });
+    }
+  </script>
 </body>
 </html>
