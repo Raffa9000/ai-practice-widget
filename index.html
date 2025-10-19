@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AI Compliance Coach</title>
   <meta name="theme-color" content="#0b1220" />
-  <!-- GitHub Pages path-aware -->
-  <link rel="manifest" href="/ai-practice-widget/manifest.webmanifest">
+  <!-- Path-aware for GitHub Pages + version for cache-busting -->
+  <link rel="manifest" href="/ai-practice-widget/manifest.webmanifest?v=3">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%22.1em%22 font-size=%2280%22>🤖</text></svg>">
   <style>
     :root{
@@ -60,17 +60,17 @@
     /* Widget slot: centered + roomy to avoid clipping */
     .slot{
       width:100%;
-      min-height: 560px;             /* extra space so nothing clips */
+      min-height: 560px;
       display:flex;
-      align-items:flex-start;        /* widget sits from top inside card */
-      justify-content:center;        /* horizontally centered */
+      align-items:flex-start;
+      justify-content:center;
       padding: 6px 8px;
     }
     elevenlabs-convai{
       display:block;
       width: 100%;
-      max-width: 760px;              /* keeps pleasant width */
-      min-height: 520px;             /* ensures widget space */
+      max-width: 760px;
+      min-height: 520px;
     }
 
     .note{color:var(--muted); font-size:12px; text-align:center; margin-top:8px}
@@ -159,11 +159,16 @@
     <footer>© 2025 • Regulated Environments &amp; Contract Compliance</footer>
   </div>
 
-  <!-- PWA service worker -->
+  <!-- PWA service worker (versioned) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/ai-practice-widget/sw.js').catch(()=>{});
+        navigator.serviceWorker.register('/ai-practice-widget/sw.js?v=3')
+          .then((reg) => {
+            // If a new SW is waiting, activate it now
+            if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          })
+          .catch(()=>{});
       });
     }
   </script>
@@ -184,7 +189,7 @@
           tagline.style.opacity = 1;
           i++;
           if (i < steps.length) {
-            setTimeout(step, 1500);     // show each phrase ~1.5s
+            setTimeout(step, 1500);     // ~1.5s each phrase
           } else {
             setTimeout(()=> logoEl.classList.add('show'), 1200); // logo after last phrase
           }
@@ -195,13 +200,13 @@
     window.addEventListener('DOMContentLoaded', runTaglineSequence);
   </script>
 
-  <!-- Dynamically load ElevenLabs after render (reliable in PWA) -->
+  <!-- Dynamically load ElevenLabs after render (versioned to bust cache) -->
   <script>
     function loadWidget(){
       const existing = document.querySelector('script[src*="convai-widget-embed"]');
       if (existing) existing.remove();
       const s = document.createElement('script');
-      s.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      s.src = "https://unpkg.com/@elevenlabs/convai-widget-embed?v=3";
       s.async = true;
       s.onload = () => { document.getElementById('status').textContent = "✅ Voice widget ready"; };
       s.onerror = () => { document.getElementById('status').textContent = "⚠️ Failed to load widget. Tap Reload."; };
