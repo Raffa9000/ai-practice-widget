@@ -6,123 +6,195 @@
   <title>AI Compliance Coach</title>
   <meta name="theme-color" content="#0b1220" />
   <link rel="manifest" href="/ai-practice-widget/manifest.webmanifest">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 x=%22.1em%22 font-size=%2280%22>🤖</text></svg>">
   <style>
     :root{
-      --bg:#0b1220; --fg:#e5e7eb; --muted:#9aa3b2; --card:#0f172a;
-      --ring:#60a5fa; --border:#1f2937; --shadow:0 24px 60px rgba(0,0,0,.35);
+      --bg:#0b1220; --fg:#e5e7eb; --muted:#9aa3b2; --border:#1f2937; --card:#0f172a;
+      --ring:#60a5fa;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{height:100%;margin:0}
     body{
-      margin:0; font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      color:var(--fg); background:radial-gradient(1200px 600px at 10% -10%,#1a2440 0%,transparent 60%),
-                        radial-gradient(1000px 800px at 100% 10%,#1b3a6b 0%,transparent 55%),
-                        var(--bg);
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2440 0%, transparent 60%),
+                  radial-gradient(1000px 800px at 100% 10%, #1b3a6b 0%, transparent 55%),
+                  var(--bg);
+      color:var(--fg);
       display:flex; align-items:center; justify-content:center; padding:18px;
     }
-    .grid{
-      position:fixed; inset:0; pointer-events:none; opacity:.18; 
-      background-image: linear-gradient(to right, rgba(255,255,255,.08) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-    .wrap{ width:100%; max-width:880px }
-    header{ text-align:center; margin-bottom:18px }
-    h1{ margin:0 0 6px; font-weight:700; letter-spacing:.2px; font-size: clamp(22px, 4vw, 28px); }
-    .sub{ color:var(--muted); font-size:14px }
+    .wrap{max-width:980px;width:100%}
+    h1{margin:0 0 6px;font-size:clamp(22px,4vw,28px);text-align:center}
+    .sub{color:var(--muted);font-size:14px;text-align:center;margin-bottom:14px}
     .card{
       background:rgba(15,23,42,.72); border:1px solid var(--border);
-      border-radius:20px; box-shadow:var(--shadow);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      padding:18px;
+      border-radius:18px; padding:16px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 24px 60px rgba(0,0,0,.35); overflow:visible;
     }
-    .slot{ margin-top:6px; display:flex; justify-content:center }
-    .note{ color:var(--muted); font-size:12px; text-align:center; margin-top:10px }
-    footer{ text-align:center; margin-top:14px; color:var(--muted); font-size:12px }
-    .row{ display:flex; gap:10px; align-items:center; justify-content:center; margin:10px 0 14px }
+    .slot{width:100%;min-height:520px;display:flex;justify-content:center;align-items:flex-start}
+    elevenlabs-convai{display:block;width:100%;max-width:760px;min-height:480px}
+    .meta{display:flex;gap:10px;align-items:center;justify-content:center;margin:8px 0 12px}
     .btn{
-      appearance:none; border:1px solid var(--border); color:var(--fg);
-      background:linear-gradient(180deg,#17213a,#121a2f);
-      padding:10px 14px; border-radius:12px; font-size:14px; cursor:pointer;
-      transition: transform .06s ease, box-shadow .2s ease, border-color .2s ease;
+      appearance:none;background:linear-gradient(180deg,#17213a,#121a2f);
+      border:1px solid var(--border); color:var(--fg); border-radius:12px;
+      padding:9px 12px; font-size:13px; cursor:pointer;
     }
-    .btn:hover{ border-color:#334155; box-shadow:0 6px 24px rgba(96,165,250,.15) }
-    .btn:active{ transform: translateY(1px) }
-    .toast{
-      font-size:12px; border:1px solid var(--border); border-radius:10px;
-      padding:8px 10px; background:rgba(15,23,42,.8);
+    .btn:hover{border-color:#334155}
+    .note{color:var(--muted);font-size:12px;text-align:center;margin-top:8px}
+    footer{text-align:center;margin-top:14px;color:var(--muted);font-size:12px}
+
+    /* Transcript */
+    .split{display:grid;gap:14px;margin-top:14px}
+    @media(min-width:900px){ .split{ grid-template-columns: 1fr 1fr; } }
+    .panel{
+      background:rgba(15,23,42,.72); border:1px solid var(--border);
+      border-radius:16px; padding:12px; backdrop-filter:blur(10px);
     }
-    .ok{ color:#86efac } .warn{ color:#fca5a5 }
-    @media (min-width:720px){ .card{ padding:22px } }
+    .panel h2{margin:0 0 8px; font-size:14px; color:#cbd5e1}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+    .txt{
+      width:100%; min-height:220px; resize:vertical; border-radius:12px;
+      background:#0a1222; color:var(--fg); border:1px solid #1e293b;
+      padding:10px; line-height:1.35;
+      outline:none;
+    }
+    .txt:focus{border-color:#334155; box-shadow:0 0 0 3px rgba(96,165,250,.25)}
+    .status{font-size:12px;color:var(--muted);text-align:center;margin:6px 0}
   </style>
 </head>
 <body>
-  <div class="grid"></div>
   <div class="wrap">
-    <header>
-      <h1>AI Compliance Coach</h1>
-      <div class="sub">Practice the program narrative, KPIs, and board Q&A with your ElevenLabs agent.</div>
-    </header>
+    <h1>AI Compliance Coach</h1>
+    <div class="sub">Practice the program narrative, KPIs, and board Q&A with your ElevenLabs agent.</div>
 
     <div class="card">
-      <div class="row">
-        <button id="installBtn" class="btn" style="display:none">➕ Install App</button>
-        <div id="status" class="toast">Loading voice widget…</div>
+      <div class="meta">
+        <div id="status" class="btn" style="pointer-events:none;opacity:.9">Loading voice widget…</div>
+        <button class="btn" onclick="reloadWidget()">🔄 Reload Voice Widget</button>
       </div>
 
       <div class="slot">
-        <elevenlabs-convai agent-id="agent_1101k7wte4v7etgvne4zastgwjk9"></elevenlabs-convai>
+        <elevenlabs-convai id="coach" agent-id="agent_1101k7wte4v7etgvne4zastgwjk9"></elevenlabs-convai>
+      </div>
+      <p class="note">Tip: headphones prevent echo. Add to Home Screen for one-tap access.</p>
+    </div>
+
+    <!-- Transcript / Notes panel -->
+    <div class="split">
+      <div class="panel">
+        <h2>Transcript & Notes</h2>
+        <div class="controls">
+          <button class="btn" onclick="stamp()">⏱️ Timestamp</button>
+          <button class="btn" onclick="copyNotes()">📋 Copy all</button>
+          <button class="btn" onclick="downloadNotes()">⬇️ Download .txt</button>
+          <label class="btn" style="cursor:pointer">
+            <input id="autoscroll" type="checkbox" checked style="accent-color:#60a5fa;margin-right:6px"> Autoscroll
+          </label>
+        </div>
+        <textarea id="notes" class="txt" placeholder="Live transcript & notes appear here. You can type as you speak."></textarea>
+        <div class="status" id="tstatus">Pro tip: hit “Timestamp” at key moments (open, objection, close).</div>
       </div>
 
-      <p class="note">Tip: use headphones for echo-free practice. Add to Home Screen for one-tap access.</p>
+      <div class="panel">
+        <h2>Session Markers (quick inserts)</h2>
+        <div class="controls">
+          <button class="btn" onclick="insert('OPENING: 60-sec narrative')">🎙️ Opening</button>
+          <button class="btn" onclick="insert('KPI PITCH: debt↓, SLA, escalations, revenue protection, evidence quality')">📊 KPI Pitch</button>
+          <button class="btn" onclick="insert('RISK: historical T&C debt → targeted remediation, exec shielding')">⚠️ Risk</button>
+          <button class="btn" onclick="insert('OBJECTION HANDLING: cost control, scope creep, exposure')">🧱 Objections</button>
+          <button class="btn" onclick="insert('CLOSE: revenue enablement + leadership alignment')">✅ Close</button>
+        </div>
+        <div class="status">Use markers during a call and refine the transcript later.</div>
+      </div>
     </div>
 
     <footer>© 2025 • Regulated Environments & Contract Compliance</footer>
   </div>
 
-  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-
+  <!-- PWA service worker -->
   <script>
-    // Service worker for PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/ai-practice-widget/sw.js').catch(()=>{});
       });
     }
+  </script>
 
-    // Simple widget ready/status handling
-    const statusEl = document.getElementById('status');
-    const widgetCheck = setInterval(() => {
-      const loaded = !!customElements.get?.('elevenlabs-convai');
-      if (loaded) {
-        clearInterval(widgetCheck);
-        statusEl.textContent = 'Ready';
-        statusEl.classList.add('ok');
-      }
-    }, 400);
-    setTimeout(() => {
-      if (!customElements.get?.('elevenlabs-convai')) {
-        statusEl.textContent = 'If it stalls, pull-to-refresh or check connectivity.';
-        statusEl.classList.add('warn');
-      }
-    }, 5000);
+  <!-- Dynamically load ElevenLabs after render (reliable in PWA) -->
+  <script>
+    function loadWidget(){
+      const existing = document.querySelector('script[src*="convai-widget-embed"]');
+      if (existing) existing.remove();
+      const s = document.createElement('script');
+      s.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      s.async = true;
+      s.onload = () => {
+        const st = document.getElementById('status');
+        st.textContent = "✅ Voice widget ready";
+      };
+      s.onerror = () => {
+        document.getElementById('status').textContent = "⚠️ Failed to load widget. Tap Reload.";
+      };
+      document.body.appendChild(s);
+    }
+    function reloadWidget(){
+      document.getElementById('status').textContent = "Loading voice widget…";
+      loadWidget();
+    }
+    loadWidget();
+  </script>
 
-    // Show Install button when eligible (Android/Chrome)
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'inline-block';
-    });
-    installBtn?.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.style.display = 'none';
-    });
+  <!-- Transcript utilities (append, copy, download, autoscroll) -->
+  <script>
+    const notes = document.getElementById('notes');
+    const autoscroll = document.getElementById('autoscroll');
+
+    function stamp(){
+      const ts = new Date().toLocaleString();
+      appendLine(`--- ${ts} ---`);
+    }
+    function insert(text){
+      appendLine(text);
+    }
+    function appendLine(line){
+      const atBottom = isAtBottom(notes);
+      notes.value += (notes.value ? "\n" : "") + line;
+      if (autoscroll.checked && (atBottom || notes.value.length < 50)) {
+        notes.scrollTop = notes.scrollHeight;
+      }
+    }
+    function isAtBottom(el){
+      return el.scrollTop + el.clientHeight >= el.scrollHeight - 4;
+    }
+    function copyNotes(){
+      notes.select();
+      document.execCommand('copy');
+      miniToast('Copied to clipboard');
+      notes.setSelectionRange(notes.value.length, notes.value.length);
+    }
+    function downloadNotes(){
+      const blob = new Blob([notes.value], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().replace(/[:.]/g,'-');
+      a.href = url; a.download = `session-notes-${ts}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      miniToast('Download started');
+    }
+    function miniToast(msg){
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;color:#e5e7eb;border:1px solid #374151;padding:8px 12px;border-radius:10px;font-size:12px;opacity:.98;z-index:9999";
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1400);
+    }
+
+    // (Optional) If ElevenLabs exposes events later, hook them here to auto-append.
+    // Example scaffold:
+    // window.addEventListener('message', (e) => {
+    //   if (typeof e.data === 'string' && e.data.startsWith('[convai-transcript]')) {
+    //     appendLine(e.data.replace('[convai-transcript]','').trim());
+    //   }
+    // });
   </script>
 </body>
 </html>
